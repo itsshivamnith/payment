@@ -9,6 +9,7 @@ import {
   Star,
   TrendingUp
 } from 'lucide-react';
+import Footer from './components/layout/Footer';
 
 export default function HomePage() {
   const features = [
@@ -219,58 +220,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12 px-6 mt-20">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <Wallet className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold">sBTC Gateway</span>
-          </div>
-          <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
-            The future of Bitcoin payments. Simple, secure, and built for scale.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <div className="space-y-2 text-slate-400">
-                <div>Dashboard</div>
-                <div>API Docs</div>
-                <div>Pricing</div>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <div className="space-y-2 text-slate-400">
-                <div>About</div>
-                <div>Blog</div>
-                <div>Careers</div>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <div className="space-y-2 text-slate-400">
-                <div>Help Center</div>
-                <div>Contact</div>
-                <div>Status</div>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <div className="space-y-2 text-slate-400">
-                <div>Privacy</div>
-                <div>Terms</div>
-                <div>Security</div>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-slate-800 mt-12 pt-8 text-slate-400">
-            © 2025 sBTC Gateway. All rights reserved.
-          </div>
-        </div>
-      </footer>
+<Footer/>
+  
     </div>
   );
 }
