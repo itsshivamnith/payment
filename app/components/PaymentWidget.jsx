@@ -5,13 +5,8 @@ import { Copy, Check, ExternalLink, RefreshCw, AlertCircle, CheckCircle } from '
 import { SUPPORTED_CURRENCIES } from '../constants/currencies';
 import { ethers } from 'ethers';
 
-// ✅ FIXED: Use new @stacks/connect v8 imports
-import { 
-  connect,
-  request,
-  isConnected,
-  disconnect 
-} from '@stacks/connect';
+// ✅ FIXED: Use new @stacks/connect v8+ API
+import { connect, request, isConnected, disconnect, getLocalStorage } from '@stacks/connect';
 
 export default function PaymentWidget({ payment, onPaymentUpdate }) {
   const [copied, setCopied] = useState(false);
@@ -34,10 +29,13 @@ export default function PaymentWidget({ payment, onPaymentUpdate }) {
   useEffect(() => {
     if (isConnected()) {
       setStacksConnected(true);
-      // Get the connected address from localStorage
-      const data = JSON.parse(localStorage.getItem('stacks-connect') || '{}');
-      if (data.addresses?.stx?.[0]?.address) {
-        setStacksAddress(data.addresses.stx[0].address);
+      try {
+        const data = getLocalStorage();
+        if (data?.addresses?.stx?.[0]?.address) {
+          setStacksAddress(data.addresses.stx[0].address);
+        }
+      } catch (error) {
+        console.log('Could not get stored address:', error);
       }
     }
   }, []);
@@ -117,26 +115,25 @@ export default function PaymentWidget({ payment, onPaymentUpdate }) {
     }
   };
 
-  // ✅ FIXED: Stacks wallet functions using new connect() method
+  // ✅ FIXED: Stacks wallet functions using new v8+ API
   const connectStacksWallet = async () => {
     setStacksError('');
     
     try {
       console.log('🔄 Connecting to Stacks wallet...');
       
+      // Use new connect() method instead of showConnect
       const response = await connect({
         appDetails: {
-          name: 'Multi-Crypto Payment Gateway',
+          name: 'sBTC Payment Gateway',
           icon: window.location.origin + '/favicon.ico',
-        },
-        forceWalletSelect: true, // Force wallet selection dialog
+        }
       });
-
-      console.log('✅ Stacks wallet connected:', response);
       
+      console.log('✅ Stacks wallet connected:', response);
       setStacksConnected(true);
       
-      // Get the STX address from the response
+      // Get address from response
       if (response.addresses?.stx?.[0]?.address) {
         setStacksAddress(response.addresses.stx[0].address);
       }
@@ -149,35 +146,38 @@ export default function PaymentWidget({ payment, onPaymentUpdate }) {
 
   // ✅ FIXED: Send Stacks payment using new request() method
   const sendStacksPayment = async () => {
+    if (!stacksConnected) {
+      setStacksError('Please connect your wallet first');
+      return;
+    }
+
     setStacksSending(true);
     setStacksError('');
 
     try {
       console.log('🔄 Sending Stacks payment...');
       
-      const amount = payment.currency === 'STX' 
-        ? Math.floor(parseFloat(payment.amount) * 1000000) // microSTX
-        : Math.floor(parseFloat(payment.amount) * 100000000); // Satoshis for sBTC
+      // Convert amount to microSTX (1 STX = 1,000,000 microSTX)
+      const amountInMicroStx = Math.floor(parseFloat(payment.amount) * 1000000);
 
+      // Use new request() method instead of openSTXTransfer
       const response = await request('stx_transferStx', {
         recipient: payment.paymentAddress,
-        amount: amount.toString(),
-        memo: payment.memo,
-        network: 'testnet', // Use 'mainnet' for production
+        amount: amountInMicroStx.toString(),
+        memo: payment.memo || 'sBTC Gateway Payment',
       });
 
       console.log('✅ Stacks payment completed:', response);
       
       setStacksTxId(response.txid || response.result?.txid);
-      setStacksSending(false);
       setStatus('CONFIRMED');
-      
-      alert(`🎉 ${payment.currency} Payment successful!`);
+      alert(`🎉 ${payment.currency} Payment successful!\nTransaction ID: ${response.txid || response.result?.txid}`);
       
     } catch (error) {
       console.error('❌ Stacks payment failed:', error);
+      setStacksError('Payment cancelled by user or failed');
+    } finally {
       setStacksSending(false);
-      setStacksError('Payment cancelled by user');
     }
   };
 
@@ -290,12 +290,12 @@ export default function PaymentWidget({ payment, onPaymentUpdate }) {
               </div>
             )}
 
-            {/* ✅ FIXED: Stacks Payment with new API */}
+            {/* ✅ FIXED: Stacks Payment with new v8+ API */}
             {isStacksSupported && (
               <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-4 text-white">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold flex items-center">
-                    <span className="mr-2">🪙</span>
+                    <span className="mr-2">🔥</span>
                     Pay with Leather Wallet
                   </h4>
                   {stacksConnected && (
